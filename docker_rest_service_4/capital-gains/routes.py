@@ -25,11 +25,11 @@ def register_routes(app):
             numshares_lt = int(query_params['numshareslt']) if 'numshareslt' in query_params else None
             service_urls = []
             if portfolio == "stocks1":
-                service_urls.append(os.getenv("STOCKS1_SERVICE_URL") + "/stocks")
+                service_urls.append(os.getenv("STOCKS_SERVICE_URL") + "/stocks")
             elif portfolio == "stocks2":
                 service_urls.append(os.getenv("STOCKS2_SERVICE_URL") + "/stocks")
             else:
-                service_urls.append(os.getenv("STOCKS1_SERVICE_URL") + "/stocks")
+                service_urls.append(os.getenv("STOCKS_SERVICE_URL") + "/stocks")
                 service_urls.append(os.getenv("STOCKS2_SERVICE_URL") + "/stocks")
 
             stocks = []

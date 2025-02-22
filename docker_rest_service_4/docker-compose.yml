@@ -1,64 +1,19 @@
 services:
-  #### stocks1: ####
-  ### two instances of stocks1 service, these are both the same service, storing and retrieving their data from the same database ###
-  stocks1-a:
+  #### stocks: ####
+  stocks:
     build:
       context: ./stocks
       dockerfile: Dockerfile
-    container_name: stocks1-a
+    container_name: stocks
     ports:
       - "5001:8000" # Map host port 5001 to container port 8000
     expose:
       - 8000
     environment:
       - DATABASE_NAME=stocks
-      - SERVICE_TYPE=stocks1
+      - SERVICE_TYPE=stocks
       - STOCK_SERVICE_PORT=8000 # Set the port as an environment variable for the app
       - MONGODB_URI=mongodb://mongo:27017/stocks
-    depends_on:
-      - mongo
-    volumes:
-      - ./shared:/app/shared
-    restart: always
-
-  stocks1-b:
-    # another instance of the stocks1 service for load balancing
-    build:
-      context: ./stocks
-      dockerfile: Dockerfile
-    container_name: stocks1-b
-    ports:
-      - "5004:8000" # Map host port 5001 to container port 8000
-    expose:
-      - 8000
-    environment:
-      - DATABASE_NAME=stocks
-      - SERVICE_TYPE=stocks1
-      - STOCK_SERVICE_PORT=8000 # Set the port as an environment variable for the app
-      - MONGODB_URI=mongodb://mongo:27017/stocks
-
-    depends_on:
-      - mongo
-    volumes:
-      - ./shared:/app/shared
-    restart: always
-
-  #### stocks2: ####  
-  stocks2:
-    build:
-      context: ./stocks
-      dockerfile: Dockerfile
-    container_name: stocks2
-    ports:
-      - "5002:8000" # Map host port 5002 to container port 8000
-    expose:
-      - 8000
-    environment:
-      - DATABASE_NAME=stocks
-      - SERVICE_TYPE=stocks2
-      - STOCK_SERVICE_PORT=8000
-      - MONGODB_URI=mongodb://mongo:27017/stocks
-
     depends_on:
       - mongo
     volumes:
@@ -84,30 +39,13 @@ services:
     environment:
       - SERVICE_TYPE=capital-gains
       - CAPITAL_GAIN_SERVICE_PORT=8080
-      - STOCKS1_SERVICE_URL=http://stocks1-a:8000 # URL for stocks1
-      - STOCKS2_SERVICE_URL=http://stocks2:8000 # URL for stocks2
+      - STOCKS_SERVICE_URL=http://stocks:8000 # URL for stocks
       - FLASK_APP=app.py
     depends_on:
-      - stocks1-a
-      - stocks2
+      - stocks
     volumes:
       - ./shared:/app/shared
     restart: always
-
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - stocks1-a
-      - stocks1-b
-      - stocks2
-    restart: always
-
-
 
 volumes:
   mongo_data:
