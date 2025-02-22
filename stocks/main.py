@@ -17,7 +17,7 @@ def create_app():
 if __name__ == '__main__':
     service_type = os.environ.get("SERVICE_TYPE") 
 
-    if service_type == "stocks1" or service_type == "stocks2":
+    if service_type == "stocks":
         # Initialize and connect to the MongoDB for stocks services
         db = DB()
         db.connect()

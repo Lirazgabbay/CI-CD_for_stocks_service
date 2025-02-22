@@ -14,7 +14,6 @@ def get_current_stock_price(symbol):
                                      headers={'X-Api-Key': API_KEY})
     if response.status_code == requests.codes.ok:
         json_response = response.json()
-        print(f"API Response: {json_response} (Type: {type(json_response)})", flush=True)
 
         if isinstance(json_response, list) and len(json_response) > 0:
             return json_response[0].get('price')  # Access the first item in the list

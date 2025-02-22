@@ -23,21 +23,13 @@ def register_routes(app):
             portfolio = query_params.get('portfolio')
             numshares_gt = int(query_params['numsharesgt']) if 'numsharesgt' in query_params else None
             numshares_lt = int(query_params['numshareslt']) if 'numshareslt' in query_params else None
-            service_urls = []
-            if portfolio == "stocks1":
-                service_urls.append(os.getenv("STOCKS_SERVICE_URL") + "/stocks")
-            elif portfolio == "stocks2":
-                service_urls.append(os.getenv("STOCKS2_SERVICE_URL") + "/stocks")
-            else:
-                service_urls.append(os.getenv("STOCKS_SERVICE_URL") + "/stocks")
-                service_urls.append(os.getenv("STOCKS2_SERVICE_URL") + "/stocks")
+            service_url = os.getenv("STOCKS_SERVICE_URL") + "/stocks"
 
             stocks = []
-            for service_url in service_urls:
-                response = requests.get(service_url)
-                if response.status_code != 200:
-                    return PortfolioError.server_error("Failed to fetch data from stocks service")
-                stocks.extend(response.json())
+            response = requests.get(service_url)
+            if response.status_code != 200:
+                return PortfolioError.server_error("Failed to fetch data from stocks service")
+            stocks.extend(response.json())
     
             if not isinstance(stocks, list):
                 return PortfolioError.server_error("Invalid data format from stocks service")
