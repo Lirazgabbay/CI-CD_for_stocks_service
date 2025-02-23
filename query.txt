@@ -1,6 +1,6 @@
 stocks:shares=7
 stocks:symbol=NVDA
-stocks:purchase price>=183&purchase price<=184
+stocks:purchase price=183.63
 capital-gains:symbol=AAPL
 capital-gains:purchase date=22-02-2024
 stocks:purchase date=18-06-2024
