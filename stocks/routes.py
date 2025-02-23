@@ -85,7 +85,7 @@ def register_routes(app):
                     query_params = request.args.to_dict()
                     mongo_query = {}
                     for key, value in query_params.items():
-                        if key == 'purchase_price':
+                        if key == 'purchase price':
                             mongo_query[key] = float(value) 
                         elif key == 'shares':
                             mongo_query[key] = int(value)  
