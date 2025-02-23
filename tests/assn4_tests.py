@@ -106,8 +106,7 @@ def test_stock_values(stock_ids):
         assert response.status_code == 200, f"Failed to get stock value for {expected_symbols[idx]}"
         stock_data = response.json()
         assert stock_data["symbol"] == expected_symbols[idx], f"Expected {expected_symbols[idx]}, got {stock_data['symbol']}"
-        stock_values.append(stock_data["stock value"])
-
+        
 
 #test 5
 def test_get_portfolio_value(stock_ids):
