@@ -136,7 +136,7 @@ jobs:
           touch response.txt
           while IFS= read -r line; do
             SERVICE=$(echo "$line" | cut -d':' -f1)
-            QUERY=$(echo "$line" | cut -d':' -f2-)
+            QUERY=$(echo "$line" | cut -d':' -f2- | sed 's/ /%20/g')
             echo "query: ${SERVICE}:${QUERY}" >> response.txt
             echo "response:" >> response.txt
             if [[ "$SERVICE" == "stocks" ]]; then
