@@ -10,7 +10,6 @@ class Stock:
         self.name = name
         self.symbol = symbol.upper()  
         self.purchase_price = round(purchase_price, 2)
-
         self.purchase_date = validate_date(purchase_date) if purchase_date != 'NA' else 'NA'
         self.shares = shares
 

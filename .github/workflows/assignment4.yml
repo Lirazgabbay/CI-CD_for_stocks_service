@@ -116,7 +116,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start Application
-        run: docker-compose up -d && sleep 10
+        run: docker compose up -d
+      
+      - name: Sleep
+        run: sleep 15
 
       - name: Execute Queries from query.txt
         run: |

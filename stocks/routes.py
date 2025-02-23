@@ -66,6 +66,7 @@ def register_routes(app):
 
                 # Create and store the stock
                 try:
+        
                     stock = Stock(
                         symbol= data['symbol'],
                         purchase_price= data['purchase price'],
@@ -73,8 +74,8 @@ def register_routes(app):
                         name= data.get('name', 'NA'),
                         purchase_date= data.get('purchase date', 'NA'),
                     )
-                except PortfolioError as e:  
-                    return e  # PortfolioError.malformed_data() should return a 400 response
+                except Exception as e:  
+                    return PortfolioError.malformed_data() 
                 
                 result = stocks_collection.insert_one(stock.to_dict()) 
                 return jsonify({'id': str(result.inserted_id)}), 201
