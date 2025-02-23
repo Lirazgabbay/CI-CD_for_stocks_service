@@ -63,8 +63,11 @@ jobs:
           path: .
 
       - name: Start Application
-        run: docker-compose up -d && sleep 10
-
+        run: docker compose up -d
+      
+      - name: Sleep
+        run: sleep 15
+        
       - name: Verify Running Containers
         run: |
           EXPECTED_CONTAINERS=3
