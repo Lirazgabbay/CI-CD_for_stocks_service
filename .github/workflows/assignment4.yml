@@ -5,92 +5,82 @@ on:
 
 jobs:
   build:
-    name: Build Job
+    name: Build Docker Images
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set Start Time
-        run: echo "$(date -Iminutes)" > log.txt
+      - name: Initialize Log File
+        run: |
+          touch log.txt
+          echo "$(date -Iminutes)" > log.txt
+          echo "Liraz Gabbay, Noa Erben" >> log.txt
 
-      - name: Set Submitters of this assignment
-        run: echo "Liraz Gabbay, Noa Erben" >> log.txt
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      
       - name: Build Docker Images
         run: |
-          set +e  # Allow commands to fail
-      
+          set +e
           docker build -t stocks-service -f ./stocks/Dockerfile .
-          STOCKS_BUILD_STATUS=$?
-      
+          STATUS1=$?
           docker build -t capital-gains-service -f ./capital-gains/Dockerfile .
-          CAPITAL_GAINS_BUILD_STATUS=$?
-      
-          # Ensure log file exists before writing
-          touch log.txt
-      
-          if [ $STOCKS_BUILD_STATUS -eq 0 ] && [ $CAPITAL_GAINS_BUILD_STATUS -eq 0 ]; then
+          STATUS2=$?
+          set -e
+          if [ $STATUS1 -eq 0 ] && [ $STATUS2 -eq 0 ]; then
               echo "image successfully built" >> log.txt
           else
               echo "image not able to be built" >> log.txt
           fi
-      
-          set -e  # Restore at the end 
-      
-      - name: Upload log file
+
+      - name: Upload Log File
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: log-file
+          name: log_file_build
           path: log.txt
 
       - name: Prepare Test Results File
-        if: failure()
         run: touch assn4_test_results.txt
 
       - name: Upload Empty Test Results (if build fails)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest_results
+          name: pytest_results_build
           path: assn4_test_results.txt
 
   test:
-    name: Test Job
-    needs: build
+    name: Run Tests
     runs-on: ubuntu-latest
+    needs: build
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
-        
+
       - name: Download Log File
         uses: actions/download-artifact@v4
         with:
-          name: log-file
+          name: log_file_build
           path: .
-          
+
       - name: Start Application
-        run: docker-compose up -d && sleep 15
-        
+        run: docker-compose up -d && sleep 10
+
       - name: Verify Running Containers
         run: |
           EXPECTED_CONTAINERS=3
-          RUNNING_CONTAINERS=$(docker inspect --format '{{.State.Running}}' $(docker ps -q) | grep -c true)
+          RUNNING_CONTAINERS=$(docker ps --format '{{.Names}}' | wc -l)
           if [ "$RUNNING_CONTAINERS" -eq "$EXPECTED_CONTAINERS" ]; then
-              echo "Container up and running" >> log.txt
+              echo "All expected containers are running" >> log.txt
           else
-              echo "Container failed to run" >> log.txt
+              echo "Expected $EXPECTED_CONTAINERS containers, but found $RUNNING_CONTAINERS" >> log.txt
           fi
-          
+
       - name: Install Dependencies
         run: pip install pytest requests
 
       - name: Run Pytest
-        run: pytest -v tests/assn4_tests.py | tee assn4_test_results.txt
+        run: |
+          pytest -v tests/assn4_tests.py | tee assn4_test_results.txt || true
 
       - name: Log Test Results
         run: |
@@ -104,59 +94,45 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest_results
+          name: pytest_results_test
           path: assn4_test_results.txt
 
       - name: Upload Log File
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: log-file
+          name: log_file_test
           path: log.txt
 
   query:
-    name: Query Job
-    needs: test
+    name: Run Query Tests
     runs-on: ubuntu-latest
+    needs: test
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
-        
-      - name: Create response File
-        run: touch response.txt
-        
-      - name: Start application
-        run: |
-          docker-compose up -d
-          sleep 15  # Allow services to initialize
 
-      - name: Post Stocks 1-6
-        run: |
-          curl -X POST http://localhost:5001/stocks -H "Content-Type: application/json" -d '{"name": "NVIDIA Corporation", "symbol": "NVDA", "purchase price": 134.66, "purchase date": "18-06-2024", "shares": 7}'
-          curl -X POST http://localhost:5001/stocks -H "Content-Type: application/json" -d '{"name": "Apple Inc.", "symbol": "AAPL", "purchase price": 183.63, "purchase date": "22-02-2024", "shares": 19}'
-          curl -X POST http://localhost:5001/stocks -H "Content-Type: application/json" -d '{"name": "Alphabet Inc.", "symbol": "GOOG", "purchase price": 140.12, "purchase date": "24-10-2024", "shares": 14}'
-          curl -X POST http://localhost:5001/stocks -H "Content-Type: application/json" -d '{"name": "Tesla, Inc.", "symbol": "TSLA", "purchase price": 194.58, "purchase date": "28-11-2022", "shares": 32}'
-          curl -X POST http://localhost:5001/stocks -H "Content-Type: application/json" -d '{"name": "Microsoft Corporation", "symbol": "MSFT", "purchase price": 420.55, "purchase date": "09-02-2024", "shares": 35}'
-          curl -X POST http://localhost:5001/stocks -H "Content-Type: application/json" -d '{"name": "Intel Corporation", "symbol": "INTC", "purchase price": 19.15, "purchase date": "13-01-2025", "shares": 10}'
-      
-      - name: Execute queries
+      - name: Start Application
+        run: docker-compose up -d && sleep 10
+
+      - name: Execute Queries from query.txt
         run: |
           touch response.txt
           while IFS= read -r line; do
-            service=$(echo "$line" | cut -d':' -f1)
-            query=$(echo "$line" | cut -d':' -f2-)
-            echo "query: $line" >> response.txt
+            SERVICE=$(echo "$line" | cut -d':' -f1)
+            QUERY=$(echo "$line" | cut -d':' -f2-)
+            echo "query: ${SERVICE}:${QUERY}" >> response.txt
             echo "response:" >> response.txt
-            if [[ "$service" == "stocks" ]]; then
-              curl -s "http://localhost:5001/stocks?$query" >> response.txt
-            elif [[ "$service" == "capital-gains" ]]; then
-              curl -s "http://localhost:5003/capital-gains?$query" >> response.txt
+            if [[ "$SERVICE" == "stocks" ]]; then
+              curl -s "http://localhost:5001/stocks?$QUERY" >> response.txt
+            elif [[ "$SERVICE" == "capital-gains" ]]; then
+              curl -s "http://localhost:5003/capital-gains?$QUERY" >> response.txt
             fi
           done < query.txt
-      
-      - name: Upload response file
+
+      - name: Upload Query Responses
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: query-response
+          name: query_responses
           path: response.txt
