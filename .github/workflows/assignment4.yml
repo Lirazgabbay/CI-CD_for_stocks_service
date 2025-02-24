@@ -26,16 +26,29 @@ jobs:
           STATUS2=$?
           if [ $STATUS1 -eq 0 ] && [ $STATUS2 -eq 0 ]; then
               echo "image successfully built" >> log.txt
+              # Save images as tar files
+              docker save stocks-service > stocks-service.tar
+              docker save capital-gains-service > capital-gains-service.tar
           else
               echo "image not able to be built" >> log.txt
+              exit 1
           fi
           set -e
+  
+      - name: Upload Docker images
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-images
+          path: |
+            stocks-service.tar
+            capital-gains-service.tar
 
       - name: Upload Log File
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: log_file_build
+          name: log_file
           path: log.txt
 
       - name: Prepare Test Results File
@@ -56,11 +69,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Download Log File
+      - name: Download log file from build job
         uses: actions/download-artifact@v4
         with:
-          name: log_file_build
+          name: log-file
           path: .
+
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+          path: .
+      
+      - name: Load Docker images
+        run: |
+          docker load < stocks-service.tar
+          docker load < capital-gains-service.tar
 
       - name: Start Application
         run: docker compose up -d
