@@ -63,7 +63,7 @@ jobs:
           path: .
 
       - name: Start Application
-        run: docker----compose up -d # try to fail it on purpose
+        run: docker compose up -d
       
       - name: Sleep
         run: sleep 15
@@ -74,9 +74,9 @@ jobs:
           EXPECTED_CONTAINERS=3
           RUNNING_CONTAINERS=$(docker ps --format '{{.Names}}' | wc -l)
           if [ "$RUNNING_CONTAINERS" -eq "$EXPECTED_CONTAINERS" ]; then
-              echo "All expected containers are running" >> log.txt
+              echo "Container failed to run" >> log.txt
           else
-              echo "Expected $EXPECTED_CONTAINERS containers, but found $RUNNING_CONTAINERS" >> log.txt
+              echo "Container failed to run" >> log.txt
           fi
 
       - name: Install Dependencies
