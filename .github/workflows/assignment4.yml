@@ -24,12 +24,12 @@ jobs:
           STATUS1=$?
           docker build -t capital-gains-service -f ./capital-gains/Dockerfile .
           STATUS2=$?
-          set -e
           if [ $STATUS1 -eq 0 ] && [ $STATUS2 -eq 0 ]; then
               echo "image successfully built" >> log.txt
           else
               echo "image not able to be built" >> log.txt
           fi
+          set -e
 
       - name: Upload Log File
         if: always()
@@ -63,12 +63,13 @@ jobs:
           path: .
 
       - name: Start Application
-        run: docker compose up -d
+        run: docker----compose up -d # try to fail it on purpose
       
       - name: Sleep
         run: sleep 15
         
       - name: Verify Running Containers
+        if: always()
         run: |
           EXPECTED_CONTAINERS=3
           RUNNING_CONTAINERS=$(docker ps --format '{{.Names}}' | wc -l)
@@ -104,7 +105,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: log_file_test
+          name: log_file
           path: log.txt
 
   query:
