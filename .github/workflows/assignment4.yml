@@ -74,7 +74,7 @@ jobs:
           EXPECTED_CONTAINERS=3
           RUNNING_CONTAINERS=$(docker ps --format '{{.Names}}' | wc -l)
           if [ "$RUNNING_CONTAINERS" -eq "$EXPECTED_CONTAINERS" ]; then
-              echo "Container failed to run" >> log.txt
+              echo "Container up and running" >> log.txt
           else
               echo "Container failed to run" >> log.txt
           fi
@@ -122,7 +122,6 @@ jobs:
       - name: Sleep
         run: sleep 15
 
-
       - name: Post six stocks
         run: |
           curl -X POST http://localhost:5001/stocks -H "Content-Type: application/json" -d '{"name": "NVIDIA Corporation", "symbol": "NVDA", "purchase price": 134.66, "purchase date": "18-06-2024", "shares": 7}'
@@ -138,14 +137,18 @@ jobs:
           while IFS= read -r line; do
             SERVICE=$(echo "$line" | cut -d':' -f1)
             QUERY=$(echo "$line" | cut -d':' -f2- | sed 's/ /%20/g')
+            
             echo "query: ${SERVICE}:${QUERY}" >> response.txt
-            echo "response:" >> response.txt
+
             if [[ "$SERVICE" == "stocks" ]]; then
-              curl -s "http://localhost:5001/stocks?$QUERY" >> response.txt
+              RESPONSE=$(curl -s "http://localhost:5001/stocks?$QUERY")
             elif [[ "$SERVICE" == "capital-gains" ]]; then
-              curl -s "http://localhost:5003/capital-gains?$QUERY" >> response.txt
+              RESPONSE=$(curl -s "http://localhost:5003/capital-gains?$QUERY")
             fi
+
+            printf "response: %s\n" "$RESPONSE" >> response.txt
           done < query.txt
+
 
       - name: Upload Query Responses
         if: always()
