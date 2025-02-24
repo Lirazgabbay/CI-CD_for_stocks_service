@@ -131,6 +131,7 @@ jobs:
         with:
           name: log_file
           path: log.txt
+          overwrite: true
 
   query:
     name: Run Query Tests
