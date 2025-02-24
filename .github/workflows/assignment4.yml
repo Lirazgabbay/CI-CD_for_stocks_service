@@ -72,7 +72,7 @@ jobs:
       - name: Download log file from build job
         uses: actions/download-artifact@v4
         with:
-          name: log-file
+          name: log_file
           path: .
 
       - name: Download Docker images
