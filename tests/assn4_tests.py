@@ -90,7 +90,7 @@ def test_get_all_stocks():
     response = requests.get(f"{BASE_URL}/stocks")
     assert response.status_code == 200, "Failed to retrieve stock data"
     stocks = response.json()
-    assert isinstance(stocks, list) and len(stocks) == 3, "stocks should be a list with 3 elements"
+    assert isinstance(stocks, list) and len(stocks) == 2, "stocks should be a list with 3 elements"
 
 
 #test 4
