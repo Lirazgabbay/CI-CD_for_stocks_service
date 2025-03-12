@@ -1,7 +1,7 @@
-stocks:shares=7
-stocks:
-stocks:symbol=NVDA
-capital-gains:symbol=AAPL
-capital-gains:purchase date=22-02-2024
-stocks:purchase price=183.63
-stocks:purchase date=18-06-2024
+stocks:shares=14
+stocks:symbol=TSLA
+stocks:shares=100
+capital-gains:numsharesgt=15
+capital-gains:numshareslt=10
+capital-gains:shares=7
+capital-gains:portfolio-value
